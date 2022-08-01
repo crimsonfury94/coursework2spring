@@ -4,15 +4,14 @@ import com.example.coursework2spring.data.Question;
 import com.example.coursework2spring.service.QuestionService;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class JavaQuestionService implements QuestionService {
 
-    private static final int LIMIT = 5;
+
+
+    private static final Random random = new Random();
 
     private final Set<Question> questions;
 
@@ -23,7 +22,7 @@ public class JavaQuestionService implements QuestionService {
     @Override
     public Question add(String question, String answer) {
         Question addQuestion = new Question(question, answer);
-        if (questions.size() < LIMIT) {
+        if (!questions.contains(addQuestion)) {
             questions.add(addQuestion);
             return addQuestion;
         }
@@ -49,6 +48,7 @@ public class JavaQuestionService implements QuestionService {
 
     @Override
     public Question getRandomQuestion() {
-        return null;
+        List<Question> questionList = new ArrayList<>(questions);
+        return questionList.get(random.nextInt(questions.size()));
     }
 }
