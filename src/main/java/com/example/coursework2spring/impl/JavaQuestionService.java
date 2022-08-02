@@ -22,11 +22,8 @@ public class JavaQuestionService implements QuestionService {
     @Override
     public Question add(String question, String answer) {
         Question addQuestion = new Question(question, answer);
-        if (!questions.contains(addQuestion)) {
-            questions.add(addQuestion);
-            return addQuestion;
-        }
-        throw new ArrayStoreException();
+        questions.add(addQuestion);
+        return addQuestion;
     }
 
     @Override
