@@ -12,7 +12,7 @@ import java.util.*;
 public class JavaQuestionService implements QuestionService {
 
 
-    private static final Random random = new Random();
+    private static final Random RANDOM = new Random();
 
     private final Set<Question> questions;
 
@@ -56,6 +56,6 @@ public class JavaQuestionService implements QuestionService {
     @Override
     public Question getRandomQuestion() {
         List<Question> questionList = new ArrayList<>(questions);
-        return questionList.get(random.nextInt(questions.size()));
+        return questionList.get(RANDOM.nextInt(questions.size()));
     }
 }
