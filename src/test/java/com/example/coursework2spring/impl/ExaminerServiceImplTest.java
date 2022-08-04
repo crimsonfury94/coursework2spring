@@ -8,10 +8,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.when;
 
@@ -26,23 +26,27 @@ class ExaminerServiceImplTest {
 
     @Test
     void getQuestions() {
-        Question question1 = new Question("test1", "test1");
-        Question question2 = new Question("test2", "test2");
-        Question question3 = new Question("test3", "test3");
-        Question question4 = new Question("test4", "test4");
-        Question question5 = new Question("test5", "test5");
+        List<Question> question = new ArrayList<>();
+        question.add(new Question("test1", "test1"));
+        question.add(new Question("test2", "test2"));
+        question.add(new Question("test3", "test3"));
+        question.add(new Question("test4", "test4"));
+        question.add(new Question("test5", "test5"));
 
-        Collection<Question> expected = new HashSet<>(Set.of(question1, question2, question3,
-                question4, question5));
-        when(javaQuestionService.getAll()).thenReturn(expected);
-        assertThatExceptionOfType(InvalidAmountException.class)
-                .isThrownBy(() -> examinerService.getQuestions(6));
+        when(javaQuestionService.getAll()).thenReturn(question);
+        when(javaQuestionService.getRandomQuestion())
+                .thenReturn(question.get(0), question.get(1), question.get(3), question.get(2), question.get(3));
+        assertThat(examinerService.getQuestions(3))
+                .containsExactlyInAnyOrder(question.get(0), question.get(1), question.get(3));
     }
 
     @Test
     void exceptionTest() {
         assertThatExceptionOfType(InvalidAmountException.class)
                 .isThrownBy(() -> examinerService.getQuestions(6));
+
+        assertThatExceptionOfType(InvalidAmountException.class)
+                .isThrownBy(() -> examinerService.getQuestions(-1));
     }
 
 

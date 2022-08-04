@@ -1,6 +1,8 @@
 package com.example.coursework2spring.impl;
 
 import com.example.coursework2spring.data.Question;
+import com.example.coursework2spring.exception.QuestionAlreadyAddedException;
+import com.example.coursework2spring.exception.QuestionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -10,6 +12,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class JavaQuestionServiceTest {
 
@@ -17,41 +20,33 @@ class JavaQuestionServiceTest {
 
 
     @ParameterizedTest
-    @MethodSource("params")
+    @MethodSource("paramsForString")
     void add(String question, String answer) {
-        Question expected = new Question(question, answer);
-        assertThat(javaQuestionService.add(question,answer))
-                .isEqualTo(expected);
+        javaQuestionService.add(question, answer);
+        assertThatExceptionOfType(QuestionAlreadyAddedException.class)
+                .isThrownBy(() -> javaQuestionService.add(question, answer));
+        assertThat(javaQuestionService.getAll()).containsExactlyInAnyOrder(new Question(question, answer));
+
     }
 
-    @Test
-    void testAdd() {
-        Question q1 = new Question("test1","test1");
-        Question q2 = new Question("test2","test2");
-        Question q3 = new Question("test3","test3");
-
-        assertThat(javaQuestionService.add(q1))
-                .isEqualTo(q1);
-        assertThat(javaQuestionService.add(q2))
-                .isEqualTo(q2);
-        assertThat(javaQuestionService.add(q3))
-                .isEqualTo(q3);
+    @ParameterizedTest
+    @MethodSource("paramsForObjects")
+    void testAdd(Question question) {
+        javaQuestionService.add(question);
+        assertThatExceptionOfType(QuestionAlreadyAddedException.class)
+                .isThrownBy(() -> javaQuestionService.add(question));
+        assertThat(javaQuestionService.getAll()).containsExactlyInAnyOrder(question);
     }
 
-    @Test
-    void remove() {
-        Question q1 = new Question("test1","test1");
-        Question q2 = new Question("test2","test2");
-        Question q3 = new Question("test3","test3");
-
-        assertThat(javaQuestionService.remove(q1))
-                .isEqualTo(q1);
-        assertThat(javaQuestionService.remove(q2))
-                .isEqualTo(q2);
-        assertThat(javaQuestionService.remove(q3))
-                .isEqualTo(q3);
+    @ParameterizedTest
+    @MethodSource("paramsForObjects")
+    void remove(Question question) {
+        javaQuestionService.add(question);
+        javaQuestionService.remove(question);
+        assertThat(javaQuestionService.getAll()).isEmpty();
+        assertThatExceptionOfType(QuestionNotFoundException.class)
+                .isThrownBy(() -> javaQuestionService.remove(question));
     }
-
 
 
     @Test
@@ -81,16 +76,37 @@ class JavaQuestionServiceTest {
         assertThat(expected).isNotNull();
     }
 
-    @Test
-    void getRandomQuestion() {
-        Random random = new Random();
-
+    @ParameterizedTest
+    @MethodSource("paramsForRandom")
+    void getRandomQuestion(Set<Question> questions) {
+        questions.forEach(javaQuestionService::add);
+        assertThat(javaQuestionService.getAll()).hasSize(questions.size());
+        assertThat(javaQuestionService.getRandomQuestion()).isIn(javaQuestionService.getAll());
     }
 
-    private static Stream<Arguments> params() {
+    private static Stream<Arguments> paramsForObjects() {
+        return Stream.of(
+                Arguments.of(new Question("test1", "test1")),
+                Arguments.of(new Question("test2", "test2")),
+                Arguments.of(new Question("test3", "test3")));
+    }
+
+    private static Stream<Arguments> paramsForString() {
         return Stream.of(
                 Arguments.of("test1", "test1"),
                 Arguments.of("test2", "test2"),
                 Arguments.of("test3", "test3"));
+    }
+
+    private static Stream<Arguments> paramsForRandom() {
+        return Stream.of(
+                Arguments.of(
+                        Set.of(
+                                new Question("test1", "test1"),
+                                new Question("test2", "test2"),
+                                new Question("test3", "test3")
+                        )
+                )
+        );
     }
 }
